@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:youtube_clone/app/model/default.dart';
 import 'package:youtube_clone/app/model/statistics.dart';
+import 'package:youtube_clone/app/model/youtuber.dart';
 
 class YoutubeRepository extends GetConnect {
 
@@ -8,10 +9,7 @@ class YoutubeRepository extends GetConnect {
   void onInit() {
     httpClient.baseUrl = "https://www.googleapis.com";
   }
-
-
-
-
+  // methods
   Future<YoutubeVideoResult?> loadVideos(String nextPageToken) async {
     String url =
         "/youtube/v3/search?part=snippet&channelId=UCytEtngcIINSMbdc22SrbrQ&maxResults=10000&order=date&type=video&videoDefinition=high&key=AIzaSyAR2jiNyvTrRRpaYp5KhSZO0RuXmzMzB9c&pageToken=$nextPageToken";
@@ -75,18 +73,32 @@ class YoutubeRepository extends GetConnect {
       }
     }
   }
-
+// getting statistics of youtube videoID
 Future<Statistics?> getVideoInfoById(String videoId, String nextPageToken) async {
     //urls must be changed
-    String url =
-        "/youtube/v3/search?part=statistics&id=$videoId"
-        "&key=AIzaSyAR2jiNyvTrRRpaYp5KhSZO0RuXmzMzB9c";
+    String url = "/youtube/v3/search?part=statistics&id=$videoId&key=AIzaSyAR2jiNyvTrRRpaYp5KhSZO0RuXmzMzB9c";
     final response = await get(url);
     if (response.status.hasError) {
       return Future.error(response.statusText!);
     } else {
       if (response.body["items"] != null && response.body["items"].length > 0) {
-        return Statistics.fromJson(response.body['statistics']);
+        //return Statistics.fromJson(response.body['statistics']);
+        // or best method
+        Map<String,dynamic>  data=response.body['items'][0];
+        return Statistics.fromJson(data['statistics']);
+      }
+    }
+  }
+Future<Youtuber?> getChannelInfoById(String videoId, String nextPageToken) async {
+    //urls must be changed
+    String url = "/youtube/v3/channels?part=statistics&part=statistics&id=$videoId&key=AIzaSyAR2jiNyvTrRRpaYp5KhSZO0RuXmzMzB9c";
+    final response = await get(url);
+    if (response.status.hasError) {
+      return Future.error(response.statusText!);
+    } else {
+      if (response.body["items"] != null && response.body["items"].length > 0) {
+        Map<String,dynamic>  data=response.body['items'][0];
+        return Youtuber.fromJson(data);
       }
     }
   }
